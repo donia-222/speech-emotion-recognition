@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Emotion Recognition from Speech Acoustics for Human-Robot Interaction</title>
+<style>
+:root{--bg:#f4f6f5;--card:#fff;--text:#244039;--muted:#71817c;--line:#dde5e2;--accent:#173f38;--soft:#eaf2ef}
+body.dark{--bg:#101715;--card:#18211f;--text:#edf5f2;--muted:#a8b5b1;--line:#2b3a36;--accent:#9fd1c2;--soft:#21322d}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}.navin{max-width:1100px;margin:auto;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:850}.toggle{border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 11px;border-radius:10px}
+main{max-width:1050px;margin:auto;padding:0 22px 70px}.hero{padding:75px 0 55px}.eyebrow{font-weight:800;letter-spacing:.12em;font-size:12px;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(37px,6vw,65px);line-height:1.04;max-width:970px;margin:14px 0 22px}.lead{max-width:760px;font-size:18px;line-height:1.7;color:var(--muted)}
+.people{display:flex;gap:55px;flex-wrap:wrap;margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.people b{display:block;margin-top:5px}.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+section{padding:38px 0}h2{font-size:31px;margin:0 0 11px}.intro{color:var(--muted);line-height:1.72;max-width:830px;margin:0 0 23px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:19px;padding:24px;box-shadow:0 10px 30px rgba(20,40,34,.04)}
+.flow,.four{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.step{text-align:center}.num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;margin:0 auto 11px;background:var(--soft);font-weight:800}.step b{display:block}.step span{font-size:13px;color:var(--muted)}
+.emotion{text-align:center;font-weight:800}.emotion span{display:block;font-size:28px;margin-bottom:6px}
+.demo{text-align:center;max-width:760px;margin:auto}.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0}.btn{border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer}.record{background:#b84747;color:white}.stop{background:#e8eceb}.analyze{background:var(--accent);color:white;width:min(100%,320px)}audio{width:min(100%,520px);margin:5px 0 17px}.result{display:none;max-width:430px;margin:22px auto 0;background:var(--soft);padding:18px;border-radius:14px}.result strong{display:block;font-size:23px;margin:5px}.note,.placeholder{font-size:13px;color:var(--muted)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px;background:var(--card)}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}th{background:var(--soft)}tr:last-child td{border-bottom:0}
+.future{border:1px dashed var(--line);padding:22px;border-radius:17px;color:var(--muted)}footer{text-align:center;border-top:1px solid var(--line);padding:28px;color:var(--muted)}
+@media(max-width:760px){.flow,.four{grid-template-columns:1fr 1fr}.hero{padding-top:45px}}@media(max-width:480px){.flow,.four{grid-template-columns:1fr}}
+</style></head>
+<body>
+<nav><div class="navin"><div class="brand">SER · Graduation Project</div><button class="toggle" onclick="document.body.classList.toggle('dark')">☾ / ☀</button></div></nav>
+<main>
+<header class="hero">
+<div class="eyebrow">Graduation Project · Human–Robot Interaction</div>
+<h1>Emotion Recognition from Speech Acoustics for Human-Robot Interaction</h1>
+<p class="lead">A Speech Emotion Recognition project that investigates how emotion can be identified from human speech to support more natural and emotion-aware interaction between humans and robots.</p>
+<div class="people">
+<div><span class="label">Presented by</span><b>Donia Al-Barrak</b><b>Shomoukh Al-Otaibi</b></div>
+<div><span class="label">Supervisor</span><b>Dr. Muath Al-Suhaibani</b></div>
+</div>
+</header>
+
+<section><h2>About the Project</h2>
+<p class="intro">Human speech carries more than words; it also contains acoustic information related to emotion. This project focuses on Speech Emotion Recognition (SER), where speech recordings are processed and analyzed by trained models to classify the speaker's emotion.</p>
+<div class="card"><b>Current emotion classes</b><p class="intro" style="margin:8px 0 0">The current system focuses on four classes: Happy, Sad, Angry, and Neutral. The project is still under development and the final model and evaluation will be updated as experiments are completed.</p></div></section>
+
+<section><h2>How It Works</h2><p class="intro">The final web demonstration will allow a user to record speech and receive an emotion prediction from the selected trained model.</p>
+<div class="flow">
+<div class="card step"><div class="num">1</div><b>Speech Input</b><span>Record a short voice message</span></div>
+<div class="card step"><div class="num">2</div><b>Audio Processing</b><span>Prepare the speech for the model</span></div>
+<div class="card step"><div class="num">3</div><b>Trained Model</b><span>Analyze speech information</span></div>
+<div class="card step"><div class="num">4</div><b>Prediction</b><span>Emotion + confidence</span></div>
+</div></section>
+
+<section><h2>Emotion Classes</h2><div class="four">
+<div class="card emotion"><span>😊</span>Happy</div><div class="card emotion"><span>😢</span>Sad</div><div class="card emotion"><span>😠</span>Angry</div><div class="card emotion"><span>😐</span>Neutral</div>
+</div></section>
+
+<section><h2>Try Our Model</h2><p class="intro">This is the preliminary interface. The final trained model will be connected after model selection and evaluation.</p>
+<div class="card demo"><h3>Record Your Voice</h3><div class="controls"><button class="btn record" id="recordBtn">● Start Recording</button><button class="btn stop" id="stopBtn" disabled>■ Stop</button></div><audio id="player" controls></audio><br><button class="btn analyze" id="analyzeBtn">Analyze Emotion</button><div class="result" id="result"><span>Detected Emotion</span><strong>Model not connected yet</strong><span>Confidence: —</span></div><p class="note">Prototype only — no prediction is generated until the trained model is connected.</p></div></section>
+
+<section><h2>Models & Experiments</h2><p class="intro">Several approaches are being evaluated using the current <b>merged_ser_dataset</b>. The table below contains the results available at this stage of the project.</p>
+<div class="tablewrap"><table><thead><tr><th>Model structure</th><th>Dataset</th><th>Training scheme</th><th>Results</th></tr></thead><tbody>
+<tr><td>Baseline MLP – Engineered Features</td><td>merged_ser_dataset</td><td>Random 80/20</td><td>Accuracy: 79%</td></tr>
+<tr><td>Facebook Wav2Vec2</td><td>merged_ser_dataset</td><td>Random 80/20</td><td>Accuracy: 81%</td></tr>
+<tr><td>SUPERB Wav2Vec2</td><td>merged_ser_dataset</td><td>Random 80/20</td><td>Accuracy: 83%</td></tr>
+<tr><td>MLP – Engineered Features</td><td>merged_ser_dataset</td><td>Multi-iteration · Random 80/20</td><td>Accuracy: 78.91% ± 1.17%</td></tr>
+<tr><td>Facebook Wav2Vec2</td><td>merged_ser_dataset</td><td>Multi-iteration · Random 80/20</td><td>Accuracy: 82.74% ± 0.91% · F1: 0.83</td></tr>
+<tr><td>SUPERB Wav2Vec2</td><td>merged_ser_dataset</td><td>Multi-iteration · Random 80/20</td><td>—</td></tr>
+<tr><td>MLP – Engineered Features</td><td>merged_ser_dataset</td><td>5-Fold Cross-Validation</td><td>Accuracy: 78.71% ± 0.88% · F1: 0.79</td></tr>
+<tr><td>Facebook Wav2Vec2 – Engineered Features</td><td>merged_ser_dataset</td><td>5-Fold Cross-Validation</td><td>Accuracy: 84.29% ± 1.39% · F1: 0.84</td></tr>
+<tr><td>SUPERB Wav2Vec2 – Engineered Features</td><td>merged_ser_dataset</td><td>5-Fold Cross-Validation</td><td>Accuracy: 82.65% ± 2.23% · F1: 0.83</td></tr>
+</tbody></table></div></section>
+
+<section><h2>Dataset</h2><div class="card"><b>Current dataset</b><p class="intro" style="margin:8px 0 0">merged_ser_dataset</p><p class="placeholder">Additional dataset details will be added as the project progresses.</p></div></section>
+
+<section><h2>Applications</h2><div class="four">
+<div class="card step"><b>Human–Robot Interaction</b><span>Emotion-aware robot responses</span></div>
+<div class="card step"><b>Smart Assistants</b><span>More adaptive voice interaction</span></div>
+<div class="card step"><b>Interactive Systems</b><span>Understanding emotion from speech</span></div>
+<div class="card step"><b>Future Applications</b><span>To be expanded</span></div>
+</div></section>
+
+<section><h2>Next Steps</h2><div class="future">Additional datasets · Further experiments · Final model selection · Model deployment · Live emotion analysis · Final results and discussion</div></section>
+
+<section><h2>Project Team</h2><div class="card"><b>Donia Al-Barrak</b><br><b>Shomoukh Al-Otaibi</b><p class="intro" style="margin:15px 0 0"><b>Supervisor:</b> Dr. Muath Al-Suhaibani</p></div></section>
+</main><footer>Preliminary Project Website · Content will be updated as the graduation project progresses.</footer>
+<script>
+let recorder,chunks=[],stream;const rb=document.getElementById('recordBtn'),sb=document.getElementById('stopBtn'),p=document.getElementById('player');
+rb.onclick=async()=>{try{stream=await navigator.mediaDevices.getUserMedia({audio:true});recorder=new MediaRecorder(stream);chunks=[];recorder.ondataavailable=e=>chunks.push(e.data);recorder.onstop=()=>{p.src=URL.createObjectURL(new Blob(chunks,{type:recorder.mimeType}));stream.getTracks().forEach(t=>t.stop())};recorder.start();rb.disabled=true;sb.disabled=false;rb.textContent="● Recording..."}catch(e){alert("Microphone access is required to record audio.")}};
+sb.onclick=()=>{if(recorder&&recorder.state!=="inactive")recorder.stop();rb.disabled=false;sb.disabled=true;rb.textContent="● Start Recording"};
+document.getElementById('analyzeBtn').onclick=()=>document.getElementById('result').style.display='block';
+</script></body></html>
