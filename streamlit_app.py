@@ -1,3 +1,4 @@
+
 import io
 import json
 
@@ -10,95 +11,261 @@ import torch
 import torch.nn as nn
 from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
 
+# ==========================================
+# SETTINGS
+# ==========================================
+
 MODEL_NAME = "superb/wav2vec2-base-superb-er"
 SAMPLE_RATE = 16000
-MAX_SECONDS = 10  # مقطع أقصر = رام أقل (مهم في الخطة المجانية)
+MAX_SECONDS = 10
 
-# عدّلها لتطابق طريقة Spectral Gating اللي استخدمتوها في التدريب
 GATING_STRENGTH = 0.45
 
-EMOJI = {"angry": "😠", "happy": "😄", "sad": "😢", "neutral": "😐"}
+EMOJI = {
+    "angry": "😠",
+    "happy": "😄",
+    "sad": "😢",
+    "neutral": "😐"
+}
 
 torch.set_num_threads(2)
 
 
-# نفس الكلاس حق الكولاب بالضبط
+# ==========================================
+# EMOTION CLASSIFIER
+# Updated to match the saved model structure
+# ==========================================
+
 class EmotionClassifier(nn.Module):
     def __init__(self, input_dim, num_classes):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 256)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(256, 128)
-        self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(128, num_classes)
+
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+
+            nn.Linear(128, num_classes)
+        )
 
     def forward(self, x):
-        x = self.relu(self.fc1(x))
-        x = self.relu2(self.fc2(x))
-        return self.fc3(x)
+        return self.network(x)
 
 
-@st.cache_resource(show_spinner="جاري تحميل الموديل (أول مرة تاخذ دقيقة)...")
+# ==========================================
+# LOAD MODELS
+# ==========================================
+
+@st.cache_resource(
+    show_spinner="جاري تحميل المودل، قد يستغرق بعض الوقت..."
+)
 def load_models():
-    fe = Wav2Vec2FeatureExtractor.from_pretrained(MODEL_NAME)
-    w2v = Wav2Vec2Model.from_pretrained(MODEL_NAME).eval()
+
+    # Load SUPERB Wav2Vec2 feature extractor
+    fe = Wav2Vec2FeatureExtractor.from_pretrained(
+        MODEL_NAME
+    )
+
+    # Load pretrained Wav2Vec2 model
+    w2v = Wav2Vec2Model.from_pretrained(
+        MODEL_NAME
+    ).eval()
+
+    # Load scaler
     scaler = np.load("scaler.npz")
-    with open("classes.json") as f:
+
+    # Load emotion classes
+    with open("classes.json", "r", encoding="utf-8") as f:
         classes = json.load(f)
-    clf = EmotionClassifier(768, len(classes))
-    clf.load_state_dict(torch.load("emotion_classifier.pt", map_location="cpu"))
+
+    # Initialize emotion classifier
+    clf = EmotionClassifier(
+        input_dim=768,
+        num_classes=len(classes)
+    )
+
+    # Load trained weights
+    state_dict = torch.load(
+        "emotion_classifier.pt",
+        map_location="cpu",
+        weights_only=True
+    )
+
+    clf.load_state_dict(state_dict)
     clf.eval()
+
     return fe, w2v, scaler, classes, clf
 
 
+# ==========================================
+# PREDICTION
+# ==========================================
+
 def predict(audio_bytes):
+
     fe, w2v, scaler, classes, clf = load_models()
 
+    # Load audio and convert to 16 kHz
     signal, _ = librosa.load(
-        io.BytesIO(audio_bytes), sr=SAMPLE_RATE, duration=MAX_SECONDS
+        io.BytesIO(audio_bytes),
+        sr=SAMPLE_RATE,
+        duration=MAX_SECONDS
     )
+
+    # Check audio length
     if len(signal) < SAMPLE_RATE * 0.5:
-        raise ValueError("المقطع قصير جداً، جرّب مقطع أطول من نصف ثانية.")
+        raise ValueError(
+            "المقطع قصير جداً، جرّب مقطع أطول من نصف ثانية."
+        )
 
-    signal = nr.reduce_noise(y=signal, sr=SAMPLE_RATE, prop_decrease=GATING_STRENGTH)
+    # Spectral Gating noise reduction
+    signal = nr.reduce_noise(
+        y=signal,
+        sr=SAMPLE_RATE,
+        prop_decrease=GATING_STRENGTH
+    )
 
-    inputs = fe(signal, sampling_rate=SAMPLE_RATE, return_tensors="pt").input_values
+    # Wav2Vec2 input processing
+    inputs = fe(
+        signal,
+        sampling_rate=SAMPLE_RATE,
+        return_tensors="pt"
+    ).input_values
 
+    # Extract features and predict emotion
     with torch.no_grad():
+
         hidden = w2v(inputs).last_hidden_state
+
+        # Mean pooling
         feat = hidden.mean(dim=1).squeeze().numpy()
-        feat = (feat - scaler["mean"]) / scaler["scale"]
-        logits = clf(torch.tensor(feat, dtype=torch.float32).unsqueeze(0))
-        probs = torch.softmax(logits, dim=1).squeeze().numpy()
+
+        # StandardScaler
+        feat = (
+            feat - scaler["mean"]
+        ) / scaler["scale"]
+
+        # Convert features to tensor
+        features_tensor = torch.tensor(
+            feat,
+            dtype=torch.float32
+        ).unsqueeze(0)
+
+        # Emotion prediction
+        logits = clf(features_tensor)
+
+        probs = torch.softmax(
+            logits,
+            dim=1
+        ).squeeze().numpy()
 
     return dict(zip(classes, probs.tolist()))
 
 
-st.set_page_config(page_title="Speech Emotion Recognition", page_icon="🎙️")
-st.title("🎙️ Speech Emotion Recognition")
-st.caption("Wav2Vec2 (SUPERB) + Spectral Gating | IEMOCAP: angry, happy, sad, neutral")
+# ==========================================
+# STREAMLIT INTERFACE
+# ==========================================
 
-tab_upload, tab_mic = st.tabs(["📁 رفع ملف", "🎤 تسجيل"])
+st.set_page_config(
+    page_title="Speech Emotion Recognition",
+    page_icon="🎙️"
+)
+
+st.title("🎙️ Speech Emotion Recognition")
+
+st.caption(
+    "Wav2Vec2 (SUPERB) + Spectral Gating | "
+    "IEMOCAP: angry, happy, sad, neutral"
+)
+
+# Upload and microphone tabs
+tab_upload, tab_mic = st.tabs([
+    "📁 رفع ملف",
+    "🎤 تسجيل"
+])
 
 audio_bytes = None
 
+
+# ==========================================
+# UPLOAD AUDIO
+# ==========================================
+
 with tab_upload:
-    uploaded = st.file_uploader("ارفع مقطع صوتي", type=["wav", "mp3", "flac", "ogg", "m4a"])
+
+    uploaded = st.file_uploader(
+        "ارفع مقطع صوتي",
+        type=["wav", "mp3", "flac", "ogg", "m4a"]
+    )
+
     if uploaded is not None:
+
         audio_bytes = uploaded.getvalue()
+
         st.audio(audio_bytes)
 
+
+# ==========================================
+# RECORD AUDIO
+# ==========================================
+
 with tab_mic:
-    recorded = st.audio_input("اضغط وسجّل صوتك")
+
+    recorded = st.audio_input(
+        "اضغط وسجّل صوتك"
+    )
+
     if recorded is not None:
+
         audio_bytes = recorded.getvalue()
 
-if audio_bytes is not None and st.button("حلّل المشاعر", type="primary"):
-    try:
-        with st.spinner("جاري التحليل..."):
-            probs = predict(audio_bytes)
-        top = max(probs, key=probs.get)
-        st.success(f"{EMOJI.get(top, '')} المشاعر المتوقعة: **{top}** ({probs[top] * 100:.1f}%)")
-        st.bar_chart(pd.Series(probs, name="الاحتمال"))
-    except Exception as e:
-        st.error(f"صار خطأ: {e}")
+
+# ==========================================
+# ANALYZE EMOTION
+# ==========================================
+
+if audio_bytes is not None:
+
+    if st.button(
+        "حلّل المشاعر",
+        type="primary"
+    ):
+
+        try:
+
+            with st.spinner("جاري التحليل..."):
+
+                probs = predict(audio_bytes)
+
+            # Get predicted emotion
+            top = max(
+                probs,
+                key=probs.get
+            )
+
+            # Display result
+            st.success(
+                f"{EMOJI.get(top, '')} "
+                f"المشاعر المتوقعة: **{top}** "
+                f"({probs[top] * 100:.1f}%)"
+            )
+
+            # Display emotion probabilities
+            st.bar_chart(
+                pd.Series(
+                    probs,
+                    name="الاحتمال"
+                )
+            )
+
+        except Exception as e:
+
+            st.error(
+                f"صار خطأ: {e}"
+            )
